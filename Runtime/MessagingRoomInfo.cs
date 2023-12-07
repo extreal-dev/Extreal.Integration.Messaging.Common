@@ -1,15 +1,14 @@
-using System.Diagnostics.CodeAnalysis;
-using System.Text.Json.Serialization;
-
 namespace Extreal.Integration.Messaging.Common
 {
-    [SuppressMessage("Usage", "CC0047")]
     public class MessagingRoomInfo
     {
-        [JsonPropertyName("id")]
-        public string Id { get; set; }
+        public string Id { get; }
+        public string Name { get; }
 
-        [JsonPropertyName("name")]
-        public string Name { get; set; }
+        public MessagingRoomInfo(string id, string name)
+        {
+            Id = id;
+            Name = name;
+        }
     }
 }
