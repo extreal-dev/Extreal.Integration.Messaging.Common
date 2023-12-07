@@ -1,4 +1,3 @@
-#if !UNITY_WEBGL || UNITY_EDITOR
 using Cysharp.Threading.Tasks;
 using Extreal.Core.Common.System;
 using System;
@@ -58,5 +57,3 @@ namespace Extreal.Integration.Messaging.Common
             => transport.SendMessageAsync(jsonMsg, to);
     }
 }
-
-#endif
