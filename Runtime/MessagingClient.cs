@@ -6,7 +6,7 @@ using UniRx;
 
 namespace Extreal.Integration.Messaging.Common
 {
-    public class ExtrealMessagingClient : DisposableBase
+    public class MessagingClient : DisposableBase
     {
         public bool IsConnected => transport != null && transport.IsConnected;
 
@@ -21,14 +21,14 @@ namespace Extreal.Integration.Messaging.Common
         public IObservable<string> OnUserDisconnecting => transport.OnUserDisconnecting;
         public IObservable<(string userId, string message)> OnMessageReceived => transport.OnMessageReceived;
 
-        private IExtrealMessagingTransport transport;
+        private IMessagingTransport transport;
 
         private readonly CompositeDisposable disposables = new CompositeDisposable();
 
         protected override void ReleaseManagedResources()
             => disposables.Dispose();
 
-        public void SetTransport(IExtrealMessagingTransport messagingTransport)
+        public void SetTransport(IMessagingTransport messagingTransport)
         {
             transport = messagingTransport.AddTo(disposables);
 
@@ -41,19 +41,13 @@ namespace Extreal.Integration.Messaging.Common
                 .AddTo(disposables);
         }
 
-        public UniTask<List<MessagingRoomInfo>> ListRoomsAsync()
-            => transport.ListRoomsAsync();
-
         public UniTask ConnectAsync(MessagingConnectionConfig connectionConfig)
             => transport.ConnectAsync(connectionConfig);
 
         public UniTask DisconnectAsync()
             => transport.DisconnectAsync();
 
-        public UniTask DeleteRoomAsync()
-            => transport.DeleteRoomAsync();
-
-        public UniTask SendMessageAsync(string jsonMsg, string to = default)
-            => transport.SendMessageAsync(jsonMsg, to);
+        public UniTask SendMessageAsync(string message, string to = default)
+            => transport.SendMessageAsync(message, to);
     }
 }

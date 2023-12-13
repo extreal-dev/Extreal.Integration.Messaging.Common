@@ -2,12 +2,12 @@ namespace Extreal.Integration.Messaging.Common
 {
     public class MessagingConnectionConfig
     {
-        public string RoomName { get; }
+        public string GroupName { get; }
         public int MaxCapacity { get; }
 
-        public MessagingConnectionConfig(string roomName, int maxCapacity = default)
+        public MessagingConnectionConfig(string groupName, int maxCapacity = default)
         {
-            RoomName = roomName;
+            GroupName = groupName;
             MaxCapacity = maxCapacity;
         }
     }

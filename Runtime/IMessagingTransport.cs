@@ -5,7 +5,7 @@ using UniRx;
 
 namespace Extreal.Integration.Messaging.Common
 {
-    public interface IExtrealMessagingTransport : IDisposable
+    public interface IMessagingTransport : IDisposable
     {
         public bool IsConnected { get; }
         public IObservable<string> OnConnected { get; }
@@ -16,10 +16,10 @@ namespace Extreal.Integration.Messaging.Common
         public IObservable<string> OnUserDisconnecting { get; }
         public IObservable<(string userId, string message)> OnMessageReceived { get; }
 
-        UniTask SendMessageAsync(string jsonMsg, string to = default);
-        UniTask<List<MessagingRoomInfo>> ListRoomsAsync();
+        UniTask SendMessageAsync(string message, string to = default);
+        UniTask<List<Group>> ListGroupsAsync();
         UniTask ConnectAsync(MessagingConnectionConfig connectionConfig);
         UniTask DisconnectAsync();
-        UniTask DeleteRoomAsync();
+        UniTask DeleteGroupAsync();
     }
 }
