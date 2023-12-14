@@ -42,12 +42,29 @@ namespace Extreal.Integration.Messaging.Common
         }
 
         public UniTask ConnectAsync(MessagingConnectionConfig connectionConfig)
-            => transport.ConnectAsync(connectionConfig);
+        {
+            CheckTransport();
+            return transport.ConnectAsync(connectionConfig);
+        }
 
         public UniTask DisconnectAsync()
-            => transport.DisconnectAsync();
+        {
+            CheckTransport();
+            return transport.DisconnectAsync();
+        }
 
         public UniTask SendMessageAsync(string message, string to = default)
-            => transport.SendMessageAsync(message, to);
+        {
+            CheckTransport();
+            return transport.SendMessageAsync(message, to);
+        }
+
+        private void CheckTransport()
+        {
+            if (transport == null)
+            {
+                throw new InvalidOperationException("Set Transport before this operation.");
+            }
+        }
     }
 }

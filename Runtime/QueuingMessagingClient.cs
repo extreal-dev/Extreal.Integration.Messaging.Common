@@ -31,7 +31,7 @@ namespace Extreal.Integration.Messaging.Common
             this.messagingClient = messagingClient;
 
             messagingClient.OnMessageReceived
-                .Subscribe(values => responseQueue.Enqueue((values.userId, values.message)))
+                .Subscribe(responseQueue.Enqueue)
                 .AddTo(disposables);
 
             Observable.EveryUpdate()

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Extreal.Core.Common.System;
@@ -18,9 +19,23 @@ namespace Extreal.Integration.Messaging.Common
             => this.transport = transport.AddTo(disposables);
 
         public UniTask<List<Group>> ListGroupsAsync()
-            => transport.ListGroupsAsync();
+        {
+            CheckTransport();
+            return transport.ListGroupsAsync();
+        }
 
         public UniTask DeleteGroupAsync()
-            => transport.DeleteGroupAsync();
+        {
+            CheckTransport();
+            return transport.DeleteGroupAsync();
+        }
+
+        private void CheckTransport()
+        {
+            if (transport == null)
+            {
+                throw new InvalidOperationException("Set Transport before this operation.");
+            }
+        }
     }
 }
