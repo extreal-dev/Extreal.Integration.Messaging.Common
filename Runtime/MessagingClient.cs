@@ -30,6 +30,11 @@ namespace Extreal.Integration.Messaging.Common
 
         public void SetTransport(IMessagingTransport messagingTransport)
         {
+            if (messagingTransport == null)
+            {
+                throw new ArgumentNullException(nameof(messagingTransport));
+            }
+
             transport = messagingTransport.AddTo(disposables);
 
             transport.OnUserConnected
@@ -44,6 +49,12 @@ namespace Extreal.Integration.Messaging.Common
         public UniTask ConnectAsync(MessagingConnectionConfig connectionConfig)
         {
             CheckTransport();
+
+            if (connectionConfig == null)
+            {
+                throw new ArgumentNullException(nameof(connectionConfig));
+            }
+
             return transport.ConnectAsync(connectionConfig);
         }
 
@@ -56,6 +67,12 @@ namespace Extreal.Integration.Messaging.Common
         public UniTask SendMessageAsync(string message, string to = default)
         {
             CheckTransport();
+
+            if (string.IsNullOrEmpty(message))
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
             return transport.SendMessageAsync(message, to);
         }
 

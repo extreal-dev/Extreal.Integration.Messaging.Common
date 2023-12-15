@@ -16,7 +16,14 @@ namespace Extreal.Integration.Messaging.Common
             => disposables.Dispose();
 
         public void SetTransport(IMessagingTransport transport)
-            => this.transport = transport.AddTo(disposables);
+        {
+            if (transport == null)
+            {
+                throw new ArgumentNullException(nameof(transport));
+            }
+
+            this.transport = transport.AddTo(disposables);
+        }
 
         public UniTask<List<Group>> ListGroupsAsync()
         {

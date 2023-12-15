@@ -28,7 +28,12 @@ namespace Extreal.Integration.Messaging.Common
 
         public QueuingMessagingClient(MessagingClient messagingClient)
         {
-            this.messagingClient = messagingClient;
+            if (messagingClient == null)
+            {
+                throw new ArgumentNullException(nameof(messagingClient));
+            }
+
+            this.messagingClient = messagingClient.AddTo(disposables);
 
             messagingClient.OnMessageReceived
                 .Subscribe(responseQueue.Enqueue)
@@ -55,7 +60,14 @@ namespace Extreal.Integration.Messaging.Common
         }
 
         public void EnqueueRequest(string message, string to = default)
-            => requestQueue.Enqueue((to, message));
+        {
+            if (string.IsNullOrEmpty(message))
+            {
+                throw new ArgumentNullException(nameof(message));
+            }
+
+            requestQueue.Enqueue((to, message));
+        }
 
         public int ResponseQueueCount()
             => responseQueue.Count;
