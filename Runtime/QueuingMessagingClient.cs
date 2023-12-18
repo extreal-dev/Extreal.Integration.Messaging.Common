@@ -6,17 +6,55 @@ using UniRx;
 
 namespace Extreal.Integration.Messaging.Common
 {
+    /// <summary>
+    /// Class that wraps MessagingClient so that queuing can be used.
+    /// </summary>
     public class QueuingMessagingClient : DisposableBase
     {
+        /// <summary>
+        /// Whether this client is connected to a group or not.
+        /// </summary>
+        /// <value>True if connected, false otherwise.</value>
         public bool IsConnected => messagingClient.IsConnected;
 
+        /// <summary>
+        /// IDs of connected users.
+        /// </summary>
         public IReadOnlyList<string> ConnectedUsers => messagingClient.ConnectedUsers;
 
+        /// <summary>
+        /// <para>Invokes immediately after this client connects to a group.</para>
+        /// Arg: User ID of this client.
+        /// </summary>
         public IObservable<string> OnConnected => messagingClient.OnConnected;
+
+        /// <summary>
+        /// <para>Invokes just before this client disconnects from a group.</para>
+        /// Arg: reason why this client disconnects.
+        /// </summary>
         public IObservable<string> OnDisconnecting => messagingClient.OnDisconnecting;
+
+        /// <summary>
+        /// <para>Invokes immediately after this client unexpectedly disconnects from the server.</para>
+        /// Arg: reason why this client disconnects.
+        /// </summary>
         public IObservable<string> OnUnexpectedDisconnected => messagingClient.OnUnexpectedDisconnected;
+
+        /// <summary>
+        /// Invokes immediately after the connection approval is rejected.
+        /// </summary>
         public IObservable<Unit> OnConnectionApprovalRejected => messagingClient.OnConnectionApprovalRejected;
+
+        /// <summary>
+        /// <para>Invokes immediately after a user connects to a group.</para>
+        /// Arg: ID of the connected user.
+        /// </summary>
         public IObservable<string> OnUserConnected => messagingClient.OnUserConnected;
+
+        /// <summary>
+        /// <para>Invokes just before a user disconnects from a group.</para>
+        /// Arg: ID of the disconnected user.
+        /// </summary>
         public IObservable<string> OnUserDisconnecting => messagingClient.OnUserDisconnecting;
 
         private readonly MessagingClient messagingClient;
@@ -26,6 +64,11 @@ namespace Extreal.Integration.Messaging.Common
 
         private readonly CompositeDisposable disposables = new CompositeDisposable();
 
+        /// <summary>
+        /// Creates a new QueuingMessagingClient.
+        /// </summary>
+        /// <param name="messagingClient">MessagingClient.</param>
+        /// <exception cref="ArgumentNullException">When messagingClient is null.</exception>
         public QueuingMessagingClient(MessagingClient messagingClient)
         {
             if (messagingClient == null)
@@ -59,6 +102,14 @@ namespace Extreal.Integration.Messaging.Common
             }
         }
 
+        /// <summary>
+        /// Enqueues message to request queue.
+        /// </summary>
+        /// <param name="message">Message to be sent.</param>
+        /// <param name="to">
+        ///     User ID of the destination.
+        ///     <para>Sends a message to the entire group if not specified.</para>
+        /// </param>
         public void EnqueueRequest(string message, string to = default)
         {
             if (string.IsNullOrEmpty(message))
@@ -69,15 +120,30 @@ namespace Extreal.Integration.Messaging.Common
             requestQueue.Enqueue((to, message));
         }
 
+        /// <summary>
+        /// Counts the number of elements in the response queue.
+        /// </summary>
+        /// <returns>Number of elements in the response queue.</returns>
         public int ResponseQueueCount()
             => responseQueue.Count;
 
+        /// <summary>
+        /// Dequeues from response queue.
+        /// </summary>
+        /// <returns>ID of the user sending the message and the message.</returns>
         public (string from, string message) DequeueResponse()
             => responseQueue.Dequeue();
 
+        /// <summary>
+        /// Connects to a group.
+        /// </summary>
+        /// <param name="connectionConfig">Connection Config.</param>
         public UniTask ConnectAsync(MessagingConnectionConfig connectionConfig)
             => messagingClient.ConnectAsync(connectionConfig);
 
+        /// <summary>
+        /// Disconnects from a group.
+        /// </summary>
         public UniTask DisconnectAsync()
             => messagingClient.DisconnectAsync();
     }

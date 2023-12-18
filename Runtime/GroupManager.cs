@@ -6,6 +6,9 @@ using UniRx;
 
 namespace Extreal.Integration.Messaging.Common
 {
+    /// <summary>
+    /// Class that manages the groups.
+    /// </summary>
     public class GroupManager : DisposableBase
     {
         private IMessagingTransport transport;
@@ -15,6 +18,11 @@ namespace Extreal.Integration.Messaging.Common
         protected override void ReleaseManagedResources()
             => disposables.Dispose();
 
+        /// <summary>
+        /// Sets a transport.
+        /// </summary>
+        /// <param name="transport">Transport that implements IMessagingTransport.</param>
+        /// <exception cref="ArgumentNullException">When transport is null.</exception>
         public void SetTransport(IMessagingTransport transport)
         {
             if (transport == null)
@@ -25,12 +33,21 @@ namespace Extreal.Integration.Messaging.Common
             this.transport = transport.AddTo(disposables);
         }
 
+        /// <summary>
+        /// Lists groups that currently exist.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">When call this method before setting a transport.</exception>
+        /// <returns>List of the groups that currently exist.</returns>
         public UniTask<List<Group>> ListGroupsAsync()
         {
             CheckTransport();
             return transport.ListGroupsAsync();
         }
 
+        /// <summary>
+        /// Delete a group that this transport currently connects.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">When call this method before setting a transport.</exception>
         public UniTask DeleteGroupAsync()
         {
             CheckTransport();
