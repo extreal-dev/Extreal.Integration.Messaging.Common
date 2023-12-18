@@ -5,16 +5,14 @@ using UnityEngine.TestTools;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Runtime.InteropServices;
 
 namespace Extreal.Integration.Messaging.Common.Test
 {
-    public class QueuingMessagingClientTest
+    public class QueuingMessagingClientTest : IDisposable
     {
-        private MessagingTransportMock messagingTransportMock = new MessagingTransportMock();
-        private MessagingClient messagingClient = new MessagingClient();
-        // private readonly QueuingMessagingClient queuingMessagingClient = new(messagingClient);
-
-        private readonly List<string> connectedUsers = new List<string>();
+        private readonly MessagingTransportMock messagingTransportMock = new();
+        private readonly MessagingClient messagingClient = new();
 
         private string onConnectedLocalUser;
 
@@ -22,7 +20,7 @@ namespace Extreal.Integration.Messaging.Common.Test
 
         private string onUnexpectedDisconnectedReason;
 
-        private IObservable<Unit> onConnectionApprovalRejected;
+        private bool onConnectionApprovalRejected;
 
         private string onUserConnectedRemoteUser;
 
@@ -40,20 +38,21 @@ namespace Extreal.Integration.Messaging.Common.Test
         public void InitializeClient()
         {
             messagingClient.SetTransport(messagingTransportMock);
+            var queuingMessagingClient = new QueuingMessagingClient(messagingClient);
 
-            messagingClient.OnConnected.Subscribe(user => onConnectedLocalUser = user)
+            queuingMessagingClient.OnConnected.Subscribe(user => onConnectedLocalUser = user)
                 .AddTo(disposables);
 
-            messagingClient.OnDisconnecting.Subscribe(reason => onDisconnectingReason = reason)
+            queuingMessagingClient.OnDisconnecting.Subscribe(reason => onDisconnectingReason = reason)
                 .AddTo(disposables);
 
-            messagingClient.OnUnexpectedDisconnected.Subscribe(reason => onUnexpectedDisconnectedReason = reason)
+            queuingMessagingClient.OnUnexpectedDisconnected.Subscribe(reason => onUnexpectedDisconnectedReason = reason)
                 .AddTo(disposables);
 
-            messagingClient.OnUserConnected.Subscribe(user => onUserConnectedRemoteUser = user)
+            queuingMessagingClient.OnUserConnected.Subscribe(user => onUserConnectedRemoteUser = user)
                 .AddTo(disposables);
 
-            messagingClient.OnUserDisconnecting.Subscribe(user => onUserDisconnectingUser = user)
+            queuingMessagingClient.OnUserDisconnecting.Subscribe(user => onUserDisconnectingUser = user)
                 .AddTo(disposables);
 
             messagingClient.OnMessageReceived.Subscribe(tuple =>
@@ -68,32 +67,6 @@ namespace Extreal.Integration.Messaging.Common.Test
         public void DisposeClient()
         {
             disposables.Clear();
-        }
-
-        [Test]
-        public void SetTransport()
-        {
-            messagingClient.SetTransport(messagingTransportMock);
-
-            Assert.Pass("No return value to assert, no exception is sufficient.");
-        }
-
-        [Test]
-        public void SetTransportNull()
-            => Assert.That(() => messagingClient.SetTransport(null),
-                Throws.TypeOf<ArgumentNullException>()
-                    .With.Message.Contain("transport"));
-
-        [Test]
-        public void ConnectFailedTransportNull()
-        {
-            messagingClient.SetTransport(null);
-            var config = new MessagingConnectionConfig("testGroupName1", 2);
-
-            Assert.IsFalse(messagingClient.IsConnected);
-            Assert.That(async () => await messagingClient.ConnectAsync(config),
-                Throws.TypeOf<InvalidOperationException>()
-                    .With.Message.Contain("Set Transport before this operation."));
         }
 
         [Test]
@@ -155,6 +128,11 @@ namespace Extreal.Integration.Messaging.Common.Test
             Assert.IsFalse(messagingClient.ConnectedUsers.Contains(user1));
             Assert.AreEqual(expected: "disconnecting", actual: onDisconnectingReason);
             Assert.AreEqual(expected: user2, actual: onUserDisconnectingUser);
+        }
+
+        public void Dispose()
+        {
+            messagingClient.Dispose();
         }
     }
 }

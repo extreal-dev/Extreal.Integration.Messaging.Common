@@ -1,8 +1,6 @@
 using System;
 using UniRx;
 using NUnit.Framework;
-using UnityEngine.TestTools;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -13,15 +11,13 @@ namespace Extreal.Integration.Messaging.Common.Test
         private MessagingTransportMock messagingTransportMock = new MessagingTransportMock();
         private MessagingClient messagingClient;
 
-        private readonly List<string> connectedUsers = new List<string>();
-
         private string onConnectedLocalUser;
 
         private string onDisconnectingReason;
 
         private string onUnexpectedDisconnectedReason;
 
-        private IObservable<Unit> onConnectionApprovalRejected;
+        private bool onConnectionApprovalRejected;
 
         private string onUserConnectedRemoteUser;
 
@@ -47,6 +43,9 @@ namespace Extreal.Integration.Messaging.Common.Test
                 .AddTo(disposables);
 
             messagingClient.OnUnexpectedDisconnected.Subscribe(reason => onUnexpectedDisconnectedReason = reason)
+                .AddTo(disposables);
+
+            messagingClient.OnConnectionApprovalRejected.Subscribe(_ => onConnectionApprovalRejected = true)
                 .AddTo(disposables);
 
             messagingClient.OnUserConnected.Subscribe(user => onUserConnectedRemoteUser = user)
@@ -143,6 +142,7 @@ namespace Extreal.Integration.Messaging.Common.Test
             await messagingClient.ConnectAsync(config);
 
             Assert.IsFalse(messagingClient.IsConnected);
+            Assert.IsTrue(onConnectionApprovalRejected);
             Assert.AreEqual(expected: "unexpected disconnect", actual: onUnexpectedDisconnectedReason);
         }
 
