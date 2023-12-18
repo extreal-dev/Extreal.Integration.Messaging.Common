@@ -1,0 +1,27 @@
+{
+    "name": "Extreal.Integration.Messaging.Common.Test",
+    "rootNamespace": "Extreal.Integration.Messaging.Common.Test",
+    "references": [
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner",
+        "Extreal.Integration.Messaging.Common",
+        "UniRx",
+        "UniTask",
+        "Extreal.Core.Common"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
