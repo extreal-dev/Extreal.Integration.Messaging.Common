@@ -13,6 +13,7 @@ namespace Extreal.Integration.Messaging.Common.Test
     {
         private readonly MessagingTransportMock messagingTransportMock = new();
         private readonly MessagingClient messagingClient = new();
+        private QueuingMessagingClient queuingMessagingClient;
 
         private string onConnectedLocalUser;
 
@@ -35,10 +36,10 @@ namespace Extreal.Integration.Messaging.Common.Test
         private readonly CompositeDisposable disposables = new CompositeDisposable();
 
         [SetUp]
-        public void InitializeClient()
+        public void SetUp()
         {
             messagingClient.SetTransport(messagingTransportMock);
-            var queuingMessagingClient = new QueuingMessagingClient(messagingClient);
+            queuingMessagingClient = new QueuingMessagingClient(messagingClient);
 
             queuingMessagingClient.OnConnected.Subscribe(user => onConnectedLocalUser = user)
                 .AddTo(disposables);
@@ -47,6 +48,9 @@ namespace Extreal.Integration.Messaging.Common.Test
                 .AddTo(disposables);
 
             queuingMessagingClient.OnUnexpectedDisconnected.Subscribe(reason => onUnexpectedDisconnectedReason = reason)
+                .AddTo(disposables);
+
+            queuingMessagingClient.OnConnectionApprovalRejected.Subscribe(_ => onConnectionApprovalRejected = true)
                 .AddTo(disposables);
 
             queuingMessagingClient.OnUserConnected.Subscribe(user => onUserConnectedRemoteUser = user)
@@ -63,6 +67,25 @@ namespace Extreal.Integration.Messaging.Common.Test
             }).AddTo(disposables);
 
         }
+
+        [Test]
+        public void OnConnected_RelayedCorrectly()
+        {
+            // Arrange
+            var onConnectedSubject = new Subject<string>();
+            var receivedUserId = string.Empty;
+            var expectedUserId = "user123";
+
+            // イベントを購読
+            queuingMessagingClient.OnConnected.Subscribe(userId => receivedUserId = userId);
+
+            // モックのイベントを発火
+            // messagingClient.OnConnected.Invoke(expectedUserId);
+
+            // Assert
+            Assert.AreEqual(expectedUserId, receivedUserId); // イベントが正しく伝播されたか確認
+        }
+
         [TearDown]
         public void DisposeClient()
         {
@@ -117,6 +140,7 @@ namespace Extreal.Integration.Messaging.Common.Test
             await messagingClient.ConnectAsync(config);
 
             Assert.IsFalse(messagingClient.IsConnected);
+            Assert.IsTrue(onConnectionApprovalRejected);
             Assert.AreEqual(expected: "unexpected disconnect", actual: onUnexpectedDisconnectedReason);
         }
 

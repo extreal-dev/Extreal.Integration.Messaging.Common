@@ -73,5 +73,19 @@ namespace Extreal.Integration.Messaging.Common.Test
             onMessageReceived.OnNext((message, to));
             return UniTask.CompletedTask;
         }
+
+        public void DisposeMock()
+        {
+            // 必要なクリーンアップ処理を記述
+            onConnected.Dispose();
+            onDisconnecting.Dispose();
+            onUnexpectedDisconnected.Dispose();
+            onConnectionApprovalRejected.Dispose();
+            onUserConnected.Dispose();
+            onUserDisconnecting.Dispose();
+            onMessageReceived.Dispose();
+
+            // その他のリソース解放処理
+        }
     }
 }
