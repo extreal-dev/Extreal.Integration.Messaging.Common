@@ -15,47 +15,47 @@ namespace Extreal.Integration.Messaging.Common
         /// Whether this client is connected to a group or not.
         /// </summary>
         /// <value>True if connected, false otherwise.</value>
-        public bool IsConnected => messagingClient.IsConnected;
+        public bool IsJoinedGroup => messagingClient.IsJoinedGroup;
 
         /// <summary>
         /// IDs of connected users.
         /// </summary>
-        public IReadOnlyList<string> ConnectedUsers => messagingClient.ConnectedUsers;
+        public IReadOnlyList<string> JoinedUsers => messagingClient.JoinedUsers;
 
         /// <summary>
         /// <para>Invokes immediately after this client connects to a group.</para>
         /// Arg: User ID of this client.
         /// </summary>
-        public IObservable<string> OnConnected => messagingClient.OnConnected;
+        public IObservable<string> OnJoined => messagingClient.OnJoined;
 
         /// <summary>
         /// <para>Invokes just before this client disconnects from a group.</para>
         /// Arg: reason why this client disconnects.
         /// </summary>
-        public IObservable<string> OnDisconnecting => messagingClient.OnDisconnecting;
+        public IObservable<string> OnLeaving => messagingClient.OnLeaving;
 
         /// <summary>
         /// <para>Invokes immediately after this client unexpectedly disconnects from the server.</para>
         /// Arg: reason why this client disconnects.
         /// </summary>
-        public IObservable<string> OnUnexpectedDisconnected => messagingClient.OnUnexpectedDisconnected;
+        public IObservable<string> OnUnexpectedLeft => messagingClient.OnUnexpectedLeft;
 
         /// <summary>
         /// Invokes immediately after the connection approval is rejected.
         /// </summary>
-        public IObservable<Unit> OnConnectionApprovalRejected => messagingClient.OnConnectionApprovalRejected;
+        public IObservable<Unit> OnJoiningApprovalRejected => messagingClient.OnJoiningApprovalRejected;
 
         /// <summary>
         /// <para>Invokes immediately after a user connects to a group.</para>
         /// Arg: ID of the connected user.
         /// </summary>
-        public IObservable<string> OnUserConnected => messagingClient.OnUserConnected;
+        public IObservable<string> OnUserJoined => messagingClient.OnUserJoined;
 
         /// <summary>
         /// <para>Invokes just before a user disconnects from a group.</para>
         /// Arg: ID of the disconnected user.
         /// </summary>
-        public IObservable<string> OnUserDisconnecting => messagingClient.OnUserDisconnecting;
+        public IObservable<string> OnUserLeaving => messagingClient.OnUserLeaving;
 
         private readonly MessagingClient messagingClient;
 
@@ -95,7 +95,7 @@ namespace Extreal.Integration.Messaging.Common
             while (requestQueue.Count > 0)
             {
                 (var to, var message) = requestQueue.Dequeue();
-                if (IsConnected)
+                if (IsJoinedGroup)
                 {
                     await messagingClient.SendMessageAsync(message, to);
                 }
@@ -135,16 +135,33 @@ namespace Extreal.Integration.Messaging.Common
             => responseQueue.Dequeue();
 
         /// <summary>
+        /// Lists groups that currently exist.
+        /// </summary>
+        /// <returns>List of the groups that currently exist.</returns>
+        public UniTask<List<Group>> ListGroupsAsync()
+            => messagingClient.ListGroupsAsync();
+
+        public UniTask CreateGroupAsync(GroupConfig groupConfig)
+            => messagingClient.CreateGroupAsync(groupConfig);
+
+        /// <summary>
+        /// Delete a group that this transport currently connects.
+        /// </summary>
+        /// <param name="groupName">Group name to be deleted.</param>
+        public UniTask DeleteGroupAsync(string groupName)
+            => messagingClient.DeleteGroupAsync(groupName);
+
+        /// <summary>
         /// Connects to a group.
         /// </summary>
         /// <param name="connectionConfig">Connection Config.</param>
-        public UniTask ConnectAsync(MessagingConnectionConfig connectionConfig)
-            => messagingClient.ConnectAsync(connectionConfig);
+        public UniTask JoinAsync(MessagingJoiningConfig connectionConfig)
+            => messagingClient.JoinAsync(connectionConfig);
 
         /// <summary>
         /// Disconnects from a group.
         /// </summary>
-        public UniTask DisconnectAsync()
-            => messagingClient.DisconnectAsync();
+        public UniTask LeaveAsync()
+            => messagingClient.LeaveAsync();
     }
 }
