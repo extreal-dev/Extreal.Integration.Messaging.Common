@@ -1,159 +1,70 @@
 using System;
 using UniRx;
 using NUnit.Framework;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Diagnostics.CodeAnalysis;
+using UnityEngine.TestTools;
+using System.Collections;
+using Cysharp.Threading.Tasks;
+using UnityEngine;
+using System.Text.RegularExpressions;
+using Extreal.Core.Logging;
 
 namespace Extreal.Integration.Messaging.Common.Test
 {
     public class MessagingClientTest
     {
-        private MessagingTransportMock messagingTransportMock = new MessagingTransportMock();
-        private MessagingClient messagingClient;
+        private MessagingClientMock messagingClient;
 
-        private string onConnectedLocalUser;
+        private readonly string localUserId = nameof(localUserId);
+        private readonly string otherUserId = nameof(otherUserId);
 
-        private string onDisconnectingReason;
-
-        private string onUnexpectedDisconnectedReason;
-
-        private bool onConnectionApprovalRejected;
-
-        private string onUserConnectedRemoteUser;
-
-        private (string user, string message) onMessageReceivedMessageAndUser;
-
-        private string onUserDisconnectingUser;
-
-        private readonly string user1 = "testUser1";
-        private readonly string user2 = "testUser2";
-
-        private IObservable<(string userId, string message)> onMessageReceived;
+        [SuppressMessage("CodeCracker", "CC0033")]
         private readonly CompositeDisposable disposables = new CompositeDisposable();
 
         [SetUp]
-        public void InitializeClient()
+        public void Initialize()
         {
-            messagingClient.SetTransport(messagingTransportMock);
+            LoggingManager.Initialize(LogLevel.Debug);
 
-            messagingClient.OnConnected.Subscribe(user => onConnectedLocalUser = user)
-                .AddTo(disposables);
-
-            messagingClient.OnDisconnecting.Subscribe(reason => onDisconnectingReason = reason)
-                .AddTo(disposables);
-
-            messagingClient.OnUnexpectedDisconnected.Subscribe(reason => onUnexpectedDisconnectedReason = reason)
-                .AddTo(disposables);
-
-            messagingClient.OnConnectionApprovalRejected.Subscribe(_ => onConnectionApprovalRejected = true)
-                .AddTo(disposables);
-
-            messagingClient.OnUserConnected.Subscribe(user => onUserConnectedRemoteUser = user)
-                .AddTo(disposables);
-
-            messagingClient.OnUserDisconnecting.Subscribe(user => onUserDisconnectingUser = user)
-                .AddTo(disposables);
-
-            messagingClient.OnMessageReceived.Subscribe(tuple =>
-            {
-                onMessageReceivedMessageAndUser.user = tuple.userId;
-                onMessageReceivedMessageAndUser.message = tuple.message;
-
-            }).AddTo(disposables);
-
+            messagingClient = new MessagingClientMock().AddTo(disposables);
         }
+
         [TearDown]
-        public void DisposeClient()
+        public void Dispose()
         {
             disposables.Clear();
+            messagingClient = null;
         }
 
-        [Test]
-        public void SetTransport()
+        [OneTimeTearDown]
+        public void OneTimeDispose()
+            => disposables.Dispose();
+
+        [UnityTest]
+        public IEnumerator SendMessageNull() => UniTask.ToCoroutine(async () =>
         {
-            messagingClient.SetTransport(messagingTransportMock);
+            var exception = default(Exception);
+            try
+            {
+                await messagingClient.SendMessageAsync(null);
+            }
+            catch (Exception e)
+            {
+                exception = e;
+            }
 
-            Assert.Pass("No return value to assert, no exception is sufficient.");
-        }
+            Assert.That(exception, Is.Not.Null);
+            Assert.That(exception.GetType(), Is.EqualTo(typeof(ArgumentNullException)));
+            Assert.That(exception.Message, Does.Contain("message"));
+        });
 
-        [Test]
-        public void SetTransportNull()
-            => Assert.That(() => messagingClient.SetTransport(null),
-                Throws.TypeOf<ArgumentNullException>()
-                    .With.Message.Contain("transport"));
-
-        [Test]
-        public void ConnectFailedTransportNull()
+        [UnityTest]
+        public IEnumerator SendMessageBeforeJoiningGroup() => UniTask.ToCoroutine(async () =>
         {
-            messagingClient.SetTransport(null);
-            var config = new MessagingConnectionConfig("testGroupName1", 2);
+            const string message = "TestMessage";
+            await messagingClient.SendMessageAsync(message);
 
-            Assert.IsFalse(messagingClient.IsConnected);
-            Assert.That(async () => await messagingClient.ConnectAsync(config),
-                Throws.TypeOf<InvalidOperationException>()
-                    .With.Message.Contain("Set Transport before this operation."));
-        }
-
-        [Test]
-        public void ConnectFailedConfigNull()
-        {
-            Assert.That(async () => await messagingClient.ConnectAsync(null),
-                Throws.TypeOf<ArgumentNullException>()
-                    .With.Message.Contain("connectionConfig"));
-
-            Assert.IsFalse(messagingClient.IsConnected);
-        }
-
-        [Test]
-        public async void ConnectSuccessAsync()
-        {
-            var config = new MessagingConnectionConfig("testGroupName1", 2);
-
-            await messagingClient.ConnectAsync(config);
-
-            Assert.IsTrue(messagingClient.IsConnected);
-            Assert.AreEqual(expected: onConnectedLocalUser, actual: user1);
-            Assert.AreEqual(expected: onUserConnectedRemoteUser, actual: user2);
-            Assert.IsTrue(messagingClient.ConnectedUsers.Contains(user1));
-        }
-
-        [Test]
-        public void SendMessageNull()
-        {
-            Assert.That(async () => await messagingClient.SendMessageAsync(null),
-                Throws.TypeOf<ArgumentNullException>()
-                    .With.Message.Contain("message"));
-        }
-
-        [Test]
-        public async void SendMessageAsync()
-        {
-            var message = "test message";
-            await messagingClient.SendMessageAsync(message, user2);
-
-            Assert.AreEqual(expected: user2, actual: onMessageReceivedMessageAndUser.user);
-            Assert.AreEqual(expected: message, actual: onMessageReceivedMessageAndUser.message);
-        }
-
-        [Test]
-        public async Task UnexpectedDisconnectAsync()
-        {
-            var config = new MessagingConnectionConfig("testGroupName2", 2);
-            await messagingClient.ConnectAsync(config);
-
-            Assert.IsFalse(messagingClient.IsConnected);
-            Assert.IsTrue(onConnectionApprovalRejected);
-            Assert.AreEqual(expected: "unexpected disconnect", actual: onUnexpectedDisconnectedReason);
-        }
-
-        [Test]
-        public async void DisconnectAsync()
-        {
-            await messagingClient.DisconnectAsync();
-            Assert.IsFalse(messagingClient.IsConnected);
-            Assert.IsFalse(messagingClient.ConnectedUsers.Contains(user1));
-            Assert.AreEqual(expected: "disconnecting", actual: onDisconnectingReason);
-            Assert.AreEqual(expected: user2, actual: onUserDisconnectingUser);
-        }
+            LogAssert.Expect(LogType.Warning, new Regex(".*Called Send method before joining a group.*"));
+        });
     }
 }

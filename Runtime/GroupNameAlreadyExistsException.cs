@@ -10,7 +10,7 @@ namespace Extreal.Integration.Messaging.Common
         /// <summary>
         /// Creates a new exception.
         /// </summary>
-        /// <param name="message">Message</param>
+        /// <param name="message">Message.</param>
         public GroupNameAlreadyExistsException(string message) : base(message)
         {
         }

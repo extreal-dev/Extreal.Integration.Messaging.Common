@@ -15,21 +15,21 @@ namespace Extreal.Integration.Messaging.Common
     public abstract class MessagingClient : DisposableBase
     {
         /// <summary>
-        /// Whether this client is connected to a group or not.
+        /// Whether this client is joined a group or not.
         /// </summary>
-        /// <value>True if connected, false otherwise.</value>
+        /// <value>True if joined, false otherwise.</value>
         public bool IsJoinedGroup { get; private set; }
         protected void SetJoiningGroupStatus(bool isJoinedGroup)
             => IsJoinedGroup = isJoinedGroup;
 
         /// <summary>
-        /// IDs of connected users.
+        /// IDs of joined users.
         /// </summary>
         public IReadOnlyList<string> JoinedUsers => joinedUsers;
         private readonly List<string> joinedUsers = new List<string>();
 
         /// <summary>
-        /// <para>Invokes immediately after this client connects to a group.</para>
+        /// <para>Invokes immediately after this client joins a group.</para>
         /// Arg: User ID of this client.
         /// </summary>
         public IObservable<string> OnJoined => onJoined;
@@ -46,8 +46,8 @@ namespace Extreal.Integration.Messaging.Common
         });
 
         /// <summary>
-        /// <para>Invokes just before this client disconnects from a group.</para>
-        /// Arg: reason why this client disconnects.
+        /// <para>Invokes just before this client leaves a group.</para>
+        /// Arg: reason why this client leaves.
         /// </summary>
         public IObservable<string> OnLeaving => onLeaving;
         private readonly Subject<string> onLeaving;
@@ -63,8 +63,8 @@ namespace Extreal.Integration.Messaging.Common
         });
 
         /// <summary>
-        /// <para>Invokes immediately after this client unexpectedly disconnects from the server.</para>
-        /// Arg: reason why this client disconnects.
+        /// <para>Invokes immediately after this client unexpectedly leaves a group.</para>
+        /// Arg: reason why this client leaves.
         /// </summary>
         public IObservable<string> OnUnexpectedLeft => onUnexpectedLeft;
         private readonly Subject<string> onUnexpectedLeft;
@@ -81,7 +81,7 @@ namespace Extreal.Integration.Messaging.Common
         });
 
         /// <summary>
-        /// Invokes immediately after the connection approval is rejected.
+        /// Invokes immediately after the joining approval is rejected.
         /// </summary>
         public IObservable<Unit> OnJoiningApprovalRejected => onJoiningApprovalRejected;
         private readonly Subject<Unit> onJoiningApprovalRejected;
@@ -97,8 +97,8 @@ namespace Extreal.Integration.Messaging.Common
         });
 
         /// <summary>
-        /// <para>Invokes immediately after a user connects to a group.</para>
-        /// Arg: ID of the connected user.
+        /// <para>Invokes immediately after a user joins the group this client joined.</para>
+        /// Arg: ID of the joined user.
         /// </summary>
         public IObservable<string> OnUserJoined => onUserJoined;
         private readonly Subject<string> onUserJoined;
@@ -114,8 +114,8 @@ namespace Extreal.Integration.Messaging.Common
         });
 
         /// <summary>
-        /// <para>Invokes just before a user disconnects from a group.</para>
-        /// Arg: ID of the disconnected user.
+        /// <para>Invokes just before a user leaves the group this client joined.</para>
+        /// Arg: ID of the left user.
         /// </summary>
         public IObservable<string> OnUserLeaving => onUserLeaving;
         private readonly Subject<string> onUserLeaving;
@@ -179,6 +179,9 @@ namespace Extreal.Integration.Messaging.Common
             DoReleaseManagedResources();
         }
 
+        /// <summary>
+        /// Releases managed resources in sub class.
+        /// </summary>
         protected virtual void DoReleaseManagedResources() { }
 
         /// <summary>
@@ -191,8 +194,16 @@ namespace Extreal.Integration.Messaging.Common
             return groupList.Groups.Select(groupResponse => new Group(groupResponse.Id, groupResponse.Name)).ToList();
         }
 
+        /// <summary>
+        /// Lists groups that currently exist in sub class.
+        /// </summary>
+        /// <returns>List of the groups that currently exist.</returns>
         protected abstract UniTask<GroupListResponse> DoListGroupsAsync();
 
+        /// <summary>
+        /// Creates a group.
+        /// </summary>
+        /// <param name="groupConfig">Config for the created group.</param>
         public async UniTask CreateGroupAsync(GroupConfig groupConfig)
         {
             if (Logger.IsDebug())
@@ -211,32 +222,43 @@ namespace Extreal.Integration.Messaging.Common
             }
         }
 
+        /// <summary>
+        /// Creates a group in sub class.
+        /// </summary>
+        /// <remarks>
+        /// Let Status value of returned CreateGroupResponse be 409 when specified group Name already exists.
+        /// </remarks>
+        /// <param name="groupConfig">Config for the created group.</param>
         protected abstract UniTask<CreateGroupResponse> DoCreateGroupAsync(GroupConfig groupConfig);
 
         /// <summary>
-        /// Delete a group that this transport currently connects.
+        /// Deletes a group.
         /// </summary>
-        /// <param name="groupName">Group name to be deleted.</param>
+        /// <param name="groupName">Name of the deleted group.</param>
         public abstract UniTask DeleteGroupAsync(string groupName);
 
         /// <summary>
-        /// Connects to a group.
+        /// Joins a group.
         /// </summary>
-        /// <param name="connectionConfig">Connection Config.</param>
-        public UniTask JoinAsync(MessagingJoiningConfig connectionConfig)
+        /// <param name="joiningConfig">Joining Config.</param>
+        public UniTask JoinAsync(MessagingJoiningConfig joiningConfig)
         {
-            if (connectionConfig == null)
+            if (joiningConfig == null)
             {
-                throw new ArgumentNullException(nameof(connectionConfig));
+                throw new ArgumentNullException(nameof(joiningConfig));
             }
 
-            return DoJoinAsync(connectionConfig);
+            return DoJoinAsync(joiningConfig);
         }
 
-        protected abstract UniTask DoJoinAsync(MessagingJoiningConfig connectionConfig);
+        /// <summary>
+        /// Joins a group in sub class.
+        /// </summary>
+        /// <param name="joiningConfig">Joining Config.</param>
+        protected abstract UniTask DoJoinAsync(MessagingJoiningConfig joiningConfig);
 
         /// <summary>
-        /// Disconnects from a group.
+        /// Leaves a group.
         /// </summary>
         public UniTask LeaveAsync()
         {
@@ -244,10 +266,16 @@ namespace Extreal.Integration.Messaging.Common
             {
                 Logger.LogDebug(nameof(LeaveAsync));
             }
-            FireOnLeaving("disconnect request");
+            FireOnLeaving("leave request");
             return DoLeaveAsync();
         }
 
+        /// <summary>
+        /// Leaves a group in sub class.
+        /// </summary>
+        /// <remarks>
+        /// OnLeaving event with "leave request" parameter is fired on super class.
+        /// </remarks>
         protected abstract UniTask DoLeaveAsync();
 
         /// <summary>
@@ -258,6 +286,7 @@ namespace Extreal.Integration.Messaging.Common
         ///     User ID of the destination.
         ///     <para>Sends a message to the entire group if not specified.</para>
         /// </param>
+        /// <exception cref="ArgumentNullException">When message is null.</exception>
         public async UniTask SendMessageAsync(string message, string to = default)
         {
             if (string.IsNullOrEmpty(message))
@@ -269,7 +298,7 @@ namespace Extreal.Integration.Messaging.Common
             {
                 if (Logger.IsWarn())
                 {
-                    Logger.LogWarn("Called Send method before connecting to a group");
+                    Logger.LogWarn("Called Send method before joining a group");
                 }
                 return;
             }
@@ -277,6 +306,15 @@ namespace Extreal.Integration.Messaging.Common
             await DoSendMessageAsync(message, to);
         }
 
+        /// <summary>
+        /// Sends a message in sub class.
+        /// </summary>
+        /// <param name="message">Message to be sent.</param>
+        /// <param name="to">
+        ///     User ID of the destination.
+        ///     <para>Sends a message to the entire group if value is default.</para>
+        /// </param>
+        /// <exception cref="ArgumentNullException">When message is null.</exception>
         protected abstract UniTask DoSendMessageAsync(string message, string to);
     }
 }

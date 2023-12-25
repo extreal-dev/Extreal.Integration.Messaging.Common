@@ -3,7 +3,7 @@ using System;
 namespace Extreal.Integration.Messaging.Common
 {
     /// <summary>
-    /// Class that holds connection config for messaging.
+    /// Class that holds joining config for messaging.
     /// </summary>
     public class MessagingJoiningConfig
     {
@@ -12,9 +12,8 @@ namespace Extreal.Integration.Messaging.Common
         /// </summary>
         public string GroupName { get; }
 
-
         /// <summary>
-        /// Create a new MessagingConnectionConfig.
+        /// Create a new MessagingJoiningConfig.
         /// </summary>
         /// <param name="groupName">Group name.</param>
         /// <exception cref="ArgumentNullException">When groupName if null.</exception>
