@@ -5,7 +5,8 @@
         "Extreal.Core.Logging",
         "Extreal.Core.Common",
         "UniRx",
-        "UniTask"
+        "UniTask",
+        "Extreal.Framework.Analyzer"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
