@@ -12,7 +12,7 @@ namespace Extreal.Integration.Messaging.Common
     public class QueuingMessagingClient : DisposableBase
     {
         /// <summary>
-        /// Whether this client is joined a group or not.
+        /// Whether this client has joined a group or not.
         /// </summary>
         /// <value>True if joined, false otherwise.</value>
         public bool IsJoinedGroup => messagingClient.IsJoinedGroup;
@@ -23,7 +23,7 @@ namespace Extreal.Integration.Messaging.Common
         public IReadOnlyList<string> JoinedUsers => messagingClient.JoinedUsers;
 
         /// <summary>
-        /// <para>Invokes immediately after this client joins a group.</para>
+        /// <para>Invokes immediately after this client joined a group.</para>
         /// Arg: User ID of this client.
         /// </summary>
         public IObservable<string> OnJoined => messagingClient.OnJoined;

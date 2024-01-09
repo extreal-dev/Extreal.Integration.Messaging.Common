@@ -15,7 +15,7 @@ namespace Extreal.Integration.Messaging.Common
     public abstract class MessagingClient : DisposableBase
     {
         /// <summary>
-        /// Whether this client is joined a group or not.
+        /// Whether this client has joined a group or not.
         /// </summary>
         /// <value>True if joined, false otherwise.</value>
         public bool IsJoinedGroup { get; private set; }
@@ -29,7 +29,7 @@ namespace Extreal.Integration.Messaging.Common
         private readonly List<string> joinedUsers = new List<string>();
 
         /// <summary>
-        /// <para>Invokes immediately after this client joins a group.</para>
+        /// <para>Invokes immediately after this client joined a group.</para>
         /// Arg: User ID of this client.
         /// </summary>
         public IObservable<string> OnJoined => onJoined;
@@ -97,7 +97,7 @@ namespace Extreal.Integration.Messaging.Common
         });
 
         /// <summary>
-        /// <para>Invokes immediately after a user joins the group this client joined.</para>
+        /// <para>Invokes immediately after a user joined the same group this client joined.</para>
         /// Arg: ID of the joined user.
         /// </summary>
         public IObservable<string> OnUserJoined => onUserJoined;
