@@ -2,7 +2,6 @@
     "name": "Extreal.Integration.Messaging.Common",
     "rootNamespace": "Extreal.Integration.Messaging.Common",
     "references": [
-        "Extreal.SampleApp.Holiday.Analyzer",
         "Extreal.Core.Logging",
         "Extreal.Core.Common",
         "UniRx",
