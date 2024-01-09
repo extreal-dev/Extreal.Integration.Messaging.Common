@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-namespace Extreal.Integration.Messaging.Common
+namespace Extreal.Integration.Messaging
 {
     [SuppressMessage("Usage", "CC0047")]
     public class GroupListResponse

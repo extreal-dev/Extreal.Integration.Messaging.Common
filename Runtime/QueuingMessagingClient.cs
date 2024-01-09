@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using UniRx;
 
-namespace Extreal.Integration.Messaging.Common
+namespace Extreal.Integration.Messaging
 {
     /// <summary>
     /// Class that wraps MessagingClient so that it is possible to control the timing of handling messages.

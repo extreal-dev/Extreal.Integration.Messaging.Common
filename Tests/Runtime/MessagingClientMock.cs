@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Cysharp.Threading.Tasks;
 using Extreal.Core.Logging;
 
-namespace Extreal.Integration.Messaging.Common.Test
+namespace Extreal.Integration.Messaging.Test
 {
     public class MessagingClientMock : MessagingClient
     {

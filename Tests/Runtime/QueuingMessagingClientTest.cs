@@ -10,7 +10,7 @@ using System.Text.RegularExpressions;
 using Extreal.Core.Logging;
 using System.Collections.Generic;
 
-namespace Extreal.Integration.Messaging.Common.Test
+namespace Extreal.Integration.Messaging.Test
 {
     public class QueuingMessagingClientTest
     {

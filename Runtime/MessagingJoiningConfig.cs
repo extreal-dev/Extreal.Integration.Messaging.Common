@@ -1,6 +1,6 @@
 using System;
 
-namespace Extreal.Integration.Messaging.Common
+namespace Extreal.Integration.Messaging
 {
     /// <summary>
     /// Class that holds joining config for messaging.

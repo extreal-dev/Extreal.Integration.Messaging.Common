@@ -1,6 +1,6 @@
 {
-    "name": "Extreal.Integration.Messaging.Common",
-    "rootNamespace": "Extreal.Integration.Messaging.Common",
+    "name": "Extreal.Integration.Messaging",
+    "rootNamespace": "Extreal.Integration.Messaging",
     "references": [
         "Extreal.Core.Logging",
         "Extreal.Core.Common",

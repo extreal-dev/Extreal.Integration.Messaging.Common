@@ -9,7 +9,7 @@ using UnityEngine;
 using System.Text.RegularExpressions;
 using Extreal.Core.Logging;
 
-namespace Extreal.Integration.Messaging.Common.Test
+namespace Extreal.Integration.Messaging.Test
 {
     public class MessagingClientTest
     {

@@ -1,7 +1,7 @@
 using System;
 using NUnit.Framework;
 
-namespace Extreal.Integration.Messaging.Common.Test
+namespace Extreal.Integration.Messaging.Test
 {
     public class GroupConfigTest
     {

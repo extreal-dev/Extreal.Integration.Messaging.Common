@@ -1,6 +1,6 @@
 using System;
 
-namespace Extreal.Integration.Messaging.Common
+namespace Extreal.Integration.Messaging
 {
     /// <summary>
     /// Exception thrown when group name already exists at creation of group.

@@ -7,7 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using UniRx;
 
-namespace Extreal.Integration.Messaging.Common
+namespace Extreal.Integration.Messaging
 {
     /// <summary>
     /// Class for group messaging.

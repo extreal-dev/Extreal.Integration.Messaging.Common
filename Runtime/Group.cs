@@ -1,4 +1,4 @@
-namespace Extreal.Integration.Messaging.Common
+namespace Extreal.Integration.Messaging
 {
     /// <summary>
     /// Class that represents the group.

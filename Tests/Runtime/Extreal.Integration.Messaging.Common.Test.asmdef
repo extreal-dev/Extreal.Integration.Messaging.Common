@@ -1,10 +1,10 @@
 {
-    "name": "Extreal.Integration.Messaging.Common.Test",
-    "rootNamespace": "Extreal.Integration.Messaging.Common.Test",
+    "name": "Extreal.Integration.Messaging.Test",
+    "rootNamespace": "Extreal.Integration.Messaging.Test",
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "Extreal.Integration.Messaging.Common",
+        "Extreal.Integration.Messaging",
         "UniRx",
         "UniTask",
         "Extreal.Core.Logging",
